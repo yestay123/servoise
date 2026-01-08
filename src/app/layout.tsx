@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Servoise",
   description: "AI-powered digital workers.",
   icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.ico",
   },
 };
 
