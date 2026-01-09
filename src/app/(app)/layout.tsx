@@ -14,6 +14,7 @@ import {
   CreditCard,
   Bell,
   LogOut,
+  Store,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,6 +25,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -44,9 +46,9 @@ import {
 } from "@/components/ui/avatar";
 
 const workspaceItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Agents", href: "/agents", icon: Bot },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "My Agents", href: "/agents", icon: Bot },
+  { name: "Marketplace", href: "/marketplace", icon: Store },
+  { name: "Credits", href: "/credits", icon: CreditCard },
 ];
 
 const systemItems = [{ name: "Settings", href: "/settings", icon: Settings }];
@@ -91,6 +93,9 @@ function AppSidebar() {
                         <span>{item.name}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {item.name === "Credits" && (
+                      <SidebarMenuBadge>1.2k</SidebarMenuBadge>
+                    )}
                   </SidebarMenuItem>
                 );
               })}
@@ -196,7 +201,7 @@ export default function AppLayout({
         <header className="flex h-[51px] shrink-0 items-center gap-2 px-4">
           <SidebarTrigger />
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+        <div className="flex flex-1 flex-col p-4 overflow-hidden">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
