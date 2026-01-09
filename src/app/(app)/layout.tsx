@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Bot,
@@ -55,6 +55,11 @@ const systemItems = [{ name: "Settings", href: "/settings", icon: Settings }];
 
 function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push("/sign-in");
+  };
 
   return (
     <Sidebar>
@@ -94,7 +99,16 @@ function AppSidebar() {
                       </Link>
                     </SidebarMenuButton>
                     {item.name === "Credits" && (
-                      <SidebarMenuBadge>1.2k</SidebarMenuBadge>
+                      <SidebarMenuBadge className="flex items-center gap-1">
+                        <Image
+                          src="/servoise-coin.png"
+                          alt="Servoise Coin"
+                          width={12}
+                          height={12}
+                          className="shrink-0"
+                        />
+                        <span>1.2k</span>
+                      </SidebarMenuBadge>
                     )}
                   </SidebarMenuItem>
                 );
@@ -176,7 +190,7 @@ function AppSidebar() {
                   <span>Notifications</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="size-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
