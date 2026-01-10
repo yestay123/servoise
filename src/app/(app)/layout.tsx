@@ -55,6 +55,8 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import { HeaderContextSwitcher } from "@/components/header-context-switcher";
+import { useContextSwitcher } from "@/hooks/use-context-switcher";
 
 const workspaceItems = [
   { name: "My Agents", href: "/agents", icon: Bot },
@@ -220,13 +222,92 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isAgentsPage = pathname === "/agents";
+  const router = useRouter();
   const isMobile = useIsMobile();
   const [rightSidebarOpen, setRightSidebarOpen] = useState(!isMobile);
+  const [agentSwitcherOpen, setAgentSwitcherOpen] = useState(false);
 
   // Extract first name from full name
   const fullName = "Yestay Anuarbekov";
   const firstName = fullName.split(" ")[0] || "there";
+
+  // Determine scope from current route
+  const getScopeFromPath = (path: string): "my-agents" | "marketplace" | "credits" | "settings" => {
+    if (path.startsWith("/agents")) return "my-agents";
+    if (path.startsWith("/marketplace")) return "marketplace";
+    if (path.startsWith("/credits")) return "credits";
+    if (path.startsWith("/settings")) return "settings";
+    return "my-agents"; // default
+  };
+
+  // Check if we're in a detail view (e.g., /agents/[id])
+  const isDetailView = (path: string): boolean => {
+    // Check if path has more segments than just the base route
+    // e.g., /agents/123 or /agents/123/settings
+    if (path.startsWith("/agents/")) {
+      const segments = path.split("/").filter(Boolean);
+      return segments.length > 1; // More than just "agents"
+    }
+    if (path.startsWith("/marketplace/")) {
+      const segments = path.split("/").filter(Boolean);
+      return segments.length > 1;
+    }
+    return false;
+  };
+
+  const currentScope = getScopeFromPath(pathname);
+  const isInDetailView = isDetailView(pathname);
+  const isAgentsPage = pathname.startsWith("/agents");
+
+  // Mock agents data - in a real app, this would come from your data source
+  const mockAgents = [
+    { id: "1", name: "Growth Agent", lastUsed: new Date(Date.now() - 1000 * 60 * 30) },
+    { id: "2", name: "Support Agent", lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 2) },
+    { id: "3", name: "Sales Agent", lastUsed: new Date(Date.now() - 1000 * 60 * 60 * 5) },
+    { id: "4", name: "Marketing Agent" },
+    { id: "5", name: "Research Agent" },
+  ];
+
+  // Extract agent ID from path if in detail view
+  const getAgentIdFromPath = (path: string): string | null => {
+    if (path.startsWith("/agents/")) {
+      const segments = path.split("/").filter(Boolean);
+      return segments[1] || null;
+    }
+    return null;
+  };
+
+  const currentAgentId = isInDetailView ? getAgentIdFromPath(pathname) : null;
+  const currentAgent = currentAgentId
+    ? mockAgents.find((a) => a.id === currentAgentId) || null
+    : null;
+
+  // Only use state management hook when in detail view
+  const contextSwitcher = useContextSwitcher({
+    initialScope: currentScope,
+    initialAgents: mockAgents,
+  });
+
+  // Update active agent when route changes
+  useEffect(() => {
+    if (isInDetailView && currentAgent) {
+      contextSwitcher.onAgentChange(currentAgent);
+    } else if (!isInDetailView) {
+      contextSwitcher.onAgentChange(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  // Handle scope change navigation
+  const handleScopeChange = (scope: "my-agents" | "marketplace" | "credits" | "settings") => {
+    const scopeRoutes: Record<typeof scope, string> = {
+      "my-agents": "/agents",
+      marketplace: "/marketplace",
+      credits: "/credits",
+      settings: "/settings",
+    };
+    router.push(scopeRoutes[scope]);
+  };
 
   // Responsive behavior: adjust right sidebar based on screen size
   useEffect(() => {
@@ -237,6 +318,19 @@ export default function AppLayout({
       setRightSidebarOpen(true);
     }
   }, [isMobile, isAgentsPage]);
+
+  // Keyboard shortcut: ⌘K (or Ctrl+K) to open agent switcher
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setAgentSwitcherOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const toggleRightSidebar = () => {
     setRightSidebarOpen((prev) => !prev);
@@ -252,6 +346,24 @@ export default function AppLayout({
           }`}
         >
           <SidebarTrigger />
+          <HeaderContextSwitcher
+            activeScope={currentScope}
+            activeAgent={isInDetailView ? (currentAgent || contextSwitcher.activeAgent) : null}
+            agents={mockAgents}
+            onScopeChange={handleScopeChange}
+            onAgentChange={(agent) => {
+              if (agent) {
+                // Navigate to agent detail page
+                router.push(`/agents/${agent.id}`);
+              }
+            }}
+            onAgentRename={contextSwitcher.onAgentRename}
+            onAgentDuplicate={contextSwitcher.onAgentDuplicate}
+            onCreateAgent={contextSwitcher.onCreateAgent}
+            agentSwitcherOpen={agentSwitcherOpen}
+            onAgentSwitcherOpenChange={setAgentSwitcherOpen}
+            showEntitySwitcher={isInDetailView}
+          />
           {isAgentsPage && (
             <Button
               variant="ghost"
@@ -267,63 +379,67 @@ export default function AppLayout({
         {isAgentsPage ? (
           <div className="flex flex-1 overflow-hidden relative">
             <div
-              className={`flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out ${
-                rightSidebarOpen && !isMobile ? "pr-80" : ""
+              className={`overflow-auto px-4 pb-4 transition-all duration-300 ease-in-out ${
+                rightSidebarOpen && !isMobile 
+                  ? "w-[calc(100%-20rem)]" 
+                  : "w-full"
               }`}
             >
               {children}
             </div>
-            {isMobile ? (
-              <Sheet open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
-                <SheetContent
-                  side="right"
-                  className="bg-sidebar text-sidebar-foreground w-80 p-0 [&>button]:hidden data-[state=closed]:duration-300 data-[state=open]:duration-300"
-                >
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>Right Sidebar</SheetTitle>
-                    <SheetDescription>Right sidebar content.</SheetDescription>
-                  </SheetHeader>
-                  <div className="flex h-full w-full flex-col">
-                    <div className="p-4 border-sidebar-border">
-                      <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
-                        Hey {firstName}, ready to{" "}
-                        <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
-                          get things done
-                        </span>
-                        ?
-                      </h2>
-                    </div>
-                    <div className="flex-1 overflow-auto p-4">
-                      {/* Right sidebar content */}
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <aside
-                className={`fixed right-0 top-0 h-svh w-80 bg-sidebar border-l border-l-[rgba(33,33,33,1)] flex flex-col z-10 transition-[right] duration-300 ease-in-out ${
-                  rightSidebarOpen ? "right-0" : "right-[calc(20rem*-1)]"
-                }`}
-              >
-                <div className="p-4 border-sidebar-border">
-                  <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
-                    Hey {firstName}, ready to{" "}
-                    <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
-                      get things done
-                    </span>
-                    ?
-                  </h2>
-                </div>
-                <div className="flex-1 overflow-auto p-4">
-                  {/* Right sidebar content */}
-                </div>
-              </aside>
-            )}
           </div>
         ) : (
           <div className="flex flex-1 flex-col p-4 overflow-hidden">{children}</div>
         )}
       </SidebarInset>
+      {/* Right Sidebar - Separate from content, similar to left sidebar */}
+      {isAgentsPage && !isMobile && (
+        <aside
+          className={`fixed right-0 top-0 h-svh w-80 bg-sidebar border-l border-l-[rgba(33,33,33,1)] flex flex-col z-10 transition-[right] duration-300 ease-in-out ${
+            rightSidebarOpen ? "right-0" : "right-[calc(20rem*-1)]"
+          }`}
+        >
+          <div className="p-4 border-sidebar-border">
+            <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
+              Hey {firstName}, ready to{" "}
+              <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+                get things done
+              </span>
+              ?
+            </h2>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            {/* Right sidebar content */}
+          </div>
+        </aside>
+      )}
+      {isAgentsPage && isMobile && (
+        <Sheet open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
+          <SheetContent
+            side="right"
+            className="bg-sidebar text-sidebar-foreground w-80 p-0 [&>button]:hidden data-[state=closed]:duration-300 data-[state=open]:duration-300"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>Right Sidebar</SheetTitle>
+              <SheetDescription>Right sidebar content.</SheetDescription>
+            </SheetHeader>
+            <div className="flex h-full w-full flex-col">
+              <div className="p-4 border-sidebar-border">
+                <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
+                  Hey {firstName}, ready to{" "}
+                  <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+                    get things done
+                  </span>
+                  ?
+                </h2>
+              </div>
+              <div className="flex-1 overflow-auto p-4">
+                {/* Right sidebar content */}
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </SidebarProvider>
   );
 }
