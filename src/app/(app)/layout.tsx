@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import {
   Bell,
   LogOut,
   Store,
+  PanelRight,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +34,15 @@ import {
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,7 +73,7 @@ function AppSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="offcanvas" className="h-svh">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
           <Image
@@ -208,14 +219,110 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isAgentsPage = pathname === "/agents";
+  const isMobile = useIsMobile();
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(!isMobile);
+
+  // Extract first name from full name
+  const fullName = "Yestay Anuarbekov";
+  const firstName = fullName.split(" ")[0] || "there";
+
+  // Responsive behavior: adjust right sidebar based on screen size
+  useEffect(() => {
+    // On mobile, hide by default; on larger screens, show if on agents page
+    if (isMobile) {
+      setRightSidebarOpen(false);
+    } else if (isAgentsPage) {
+      setRightSidebarOpen(true);
+    }
+  }, [isMobile, isAgentsPage]);
+
+  const toggleRightSidebar = () => {
+    setRightSidebarOpen((prev) => !prev);
+  };
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true} className="h-svh">
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-[51px] shrink-0 items-center gap-2 px-4">
+        <header
+          className={`flex h-[51px] shrink-0 items-center gap-2 px-4 transition-all duration-300 ease-in-out ${
+            rightSidebarOpen && !isMobile && isAgentsPage ? "w-[calc(100%-20rem)]" : "w-full"
+          }`}
+        >
           <SidebarTrigger />
+          {isAgentsPage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 ml-auto"
+              onClick={toggleRightSidebar}
+              aria-label="Toggle right sidebar"
+            >
+              <PanelRight className="size-4" />
+            </Button>
+          )}
         </header>
-        <div className="flex flex-1 flex-col p-4 overflow-hidden">{children}</div>
+        {isAgentsPage ? (
+          <div className="flex flex-1 overflow-hidden relative">
+            <div
+              className={`flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out ${
+                rightSidebarOpen && !isMobile ? "pr-80" : ""
+              }`}
+            >
+              {children}
+            </div>
+            {isMobile ? (
+              <Sheet open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
+                <SheetContent
+                  side="right"
+                  className="bg-sidebar text-sidebar-foreground w-80 p-0 [&>button]:hidden data-[state=closed]:duration-300 data-[state=open]:duration-300"
+                >
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Right Sidebar</SheetTitle>
+                    <SheetDescription>Right sidebar content.</SheetDescription>
+                  </SheetHeader>
+                  <div className="flex h-full w-full flex-col">
+                    <div className="p-4 border-sidebar-border">
+                      <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
+                        Hey {firstName}, ready to{" "}
+                        <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+                          get things done
+                        </span>
+                        ?
+                      </h2>
+                    </div>
+                    <div className="flex-1 overflow-auto p-4">
+                      {/* Right sidebar content */}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            ) : (
+              <aside
+                className={`fixed right-0 top-0 h-svh w-80 bg-sidebar border-l border-l-[rgba(33,33,33,1)] flex flex-col z-10 transition-[right] duration-300 ease-in-out ${
+                  rightSidebarOpen ? "right-0" : "right-[calc(20rem*-1)]"
+                }`}
+              >
+                <div className="p-4 border-sidebar-border">
+                  <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
+                    Hey {firstName}, ready to{" "}
+                    <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+                      get things done
+                    </span>
+                    ?
+                  </h2>
+                </div>
+                <div className="flex-1 overflow-auto p-4">
+                  {/* Right sidebar content */}
+                </div>
+              </aside>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-1 flex-col p-4 overflow-hidden">{children}</div>
+        )}
       </SidebarInset>
     </SidebarProvider>
   );
