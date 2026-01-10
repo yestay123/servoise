@@ -45,6 +45,7 @@ interface HeaderContextSwitcherProps {
   agentSwitcherOpen?: boolean;
   onAgentSwitcherOpenChange?: (open: boolean) => void;
   showEntitySwitcher?: boolean;
+  showHome?: boolean;
 }
 
 const scopeLabels: Record<Scope, string> = {
@@ -66,6 +67,7 @@ export function HeaderContextSwitcher({
   agentSwitcherOpen: controlledAgentOpen,
   onAgentSwitcherOpenChange,
   showEntitySwitcher = false,
+  showHome = false,
 }: HeaderContextSwitcherProps) {
   const [scopeOpen, setScopeOpen] = React.useState(false);
   const [internalAgentOpen, setInternalAgentOpen] = React.useState(false);
@@ -198,7 +200,12 @@ export function HeaderContextSwitcher({
           <span className="text-muted-foreground/50 px-1">/</span>
 
           {/* Entity Switcher */}
-          <Popover open={agentOpen} onOpenChange={setAgentOpen}>
+          {showHome ? (
+            <span className="px-2.5 py-1.5 text-sm font-medium text-foreground">
+              Home
+            </span>
+          ) : (
+            <Popover open={agentOpen} onOpenChange={setAgentOpen}>
         <PopoverTrigger asChild>
           <button
             className={cn(
@@ -310,6 +317,7 @@ export function HeaderContextSwitcher({
           </Command>
         </PopoverContent>
       </Popover>
+          )}
         </>
       )}
     </div>

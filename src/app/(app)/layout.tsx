@@ -233,11 +233,12 @@ export default function AppLayout({
 
   // Determine scope from current route
   const getScopeFromPath = (path: string): "my-agents" | "marketplace" | "credits" | "settings" => {
+    if (path === "/dashboard" || path === "/") return "my-agents";
     if (path.startsWith("/agents")) return "my-agents";
     if (path.startsWith("/marketplace")) return "marketplace";
     if (path.startsWith("/credits")) return "credits";
     if (path.startsWith("/settings")) return "settings";
-    return "my-agents"; // default
+    return "my-agents"; // default to my-agents for initial page
   };
 
   // Check if we're in a detail view (e.g., /agents/[id])
@@ -362,7 +363,8 @@ export default function AppLayout({
             onCreateAgent={contextSwitcher.onCreateAgent}
             agentSwitcherOpen={agentSwitcherOpen}
             onAgentSwitcherOpenChange={setAgentSwitcherOpen}
-            showEntitySwitcher={isInDetailView}
+            showEntitySwitcher={isAgentsPage}
+            showHome={isAgentsPage && !isInDetailView}
           />
           {isAgentsPage && (
             <Button
