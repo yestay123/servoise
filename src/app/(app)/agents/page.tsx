@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Plus, CheckCircle2, Pause, XCircle, Play, MessageSquare, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 type AgentStatus = "active" | "paused" | "not active";
 
@@ -156,14 +157,24 @@ export default function AgentsPage() {
                 {agent.status}
               </Badge>
               <div className="flex items-center gap-3 pr-12">
-                <Avatar className="size-[80px] shrink-0 rounded-[10px] transition-transform duration-300 ease-out group-hover:scale-105">
-                  {agent.avatar ? (
-                    <AvatarImage src={agent.avatar} alt={agent.name} className="rounded-[10px] transition-opacity duration-300" />
-                  ) : null}
-                  <AvatarFallback className="bg-primary/10 text-primary rounded-[10px] transition-all duration-300">
+                {agent.avatar ? (
+                  <div className="size-[80px] shrink-0 rounded-[10px] overflow-hidden relative transition-transform duration-300 ease-out group-hover:scale-105">
+                    <Image
+                      src={agent.avatar}
+                      alt={agent.name}
+                      width={80}
+                      height={80}
+                      className="rounded-[10px] object-cover transition-opacity duration-300"
+                      priority={index < 3}
+                      loading={index < 3 ? "eager" : "lazy"}
+                      quality={85}
+                    />
+                  </div>
+                ) : (
+                  <div className="size-[80px] shrink-0 rounded-[10px] bg-primary/10 text-primary flex items-center justify-center transition-all duration-300">
                     {getInitials(agent.name)}
-                  </AvatarFallback>
-                </Avatar>
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="mb-1">
                     <span className="font-semibold text-[22px] truncate transition-colors duration-300">{agent.name}</span>
@@ -176,14 +187,23 @@ export default function AgentsPage() {
               {agent.message && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
                   <div className="flex items-start gap-2 pr-0 pl-2 pb-2 pt-2">
-                    <Avatar className="size-6 shrink-0 rounded-full mt-0.5">
-                      {agent.avatar ? (
-                        <AvatarImage src={agent.avatar} alt={agent.name} className="rounded-full" />
-                      ) : null}
-                      <AvatarFallback className="bg-primary/10 text-primary rounded-full text-[10px]">
+                    {agent.avatar ? (
+                      <div className="size-6 shrink-0 rounded-full overflow-hidden relative mt-0.5">
+                        <Image
+                          src={agent.avatar}
+                          alt={agent.name}
+                          width={24}
+                          height={24}
+                          className="rounded-full object-cover"
+                          loading="lazy"
+                          quality={75}
+                        />
+                      </div>
+                    ) : (
+                      <div className="size-6 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center mt-0.5 text-[10px]">
                         {getInitials(agent.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="rounded-lg rounded-tl-sm px-3 py-2 inline-block max-w-full transition-all duration-300 ease-out group-hover:shadow-md" style={{ backgroundColor: '#252525' }}>
                         <p className="text-xs text-foreground leading-relaxed break-words transition-colors duration-300">{agent.message}</p>
