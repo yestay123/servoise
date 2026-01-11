@@ -7,6 +7,7 @@ import { Plus, CheckCircle2, Pause, XCircle, Play, MessageSquare, ExternalLink }
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type AgentStatus = "active" | "paused" | "not active";
 
@@ -32,6 +33,7 @@ export default function AgentsPage() {
 
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [mounted, setMounted] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setMounted(true);
@@ -136,56 +138,57 @@ export default function AgentsPage() {
           <div
             key={agent.id}
             onClick={() => handleAgentClick(agent.id)}
-            className={`group rounded-xl glassy-outline p-1 cursor-pointer hover:bg-accent/50 transition-all duration-300 ease-out flex flex-col gap-1 hover:scale-[1.02] hover:shadow-lg min-w-0 overflow-hidden h-full ${
+            className={`group rounded-xl glassy-outline p-1 cursor-pointer hover:bg-accent/50 active:bg-accent/50 transition-all ${isMobile ? 'duration-200' : 'duration-300'} ease-out flex flex-col gap-1 ${isMobile ? 'active:scale-[0.98]' : 'hover:scale-[1.02]'} ${isMobile ? '' : 'hover:shadow-lg'} min-w-0 overflow-hidden h-full ${
               mounted 
-                ? 'animate-in fade-in slide-in-from-bottom-4' 
+                ? `animate-in fade-in ${isMobile ? 'slide-in-from-bottom-2' : 'slide-in-from-bottom-4'}` 
                 : 'opacity-0 translate-y-4'
             }`}
             style={{
-              animationDelay: `${index * 100}ms`,
+              animationDelay: isMobile ? `${index * 50}ms` : `${index * 100}ms`,
               animationFillMode: 'both',
+              animationDuration: isMobile ? '200ms' : '300ms',
             }}
           >
             <div className="rounded-xl p-2 relative" style={{ backgroundColor: '#252525' }}>
               <Badge
                 variant="outline"
-                className={`${getStatusBadgeClass(agent.status)} text-[10px] px-2 py-2 h-4 absolute top-2 right-2 !rounded-[8px] flex items-center gap-1 transition-all duration-300 ease-out`}
+                className={`${getStatusBadgeClass(agent.status)} text-[10px] px-2 py-2 h-4 absolute top-2 right-2 !rounded-[8px] flex items-center gap-1 transition-all ${isMobile ? 'duration-200' : 'duration-300'} ease-out`}
               >
-                <span className="transition-all duration-300 ease-out inline-block">
+                <span className={`transition-all ${isMobile ? 'duration-200' : 'duration-300'} ease-out inline-block`}>
                   {getStatusIcon(agent.status)}
                 </span>
                 {agent.status}
               </Badge>
               <div className="flex items-center gap-3 pr-12">
                 {agent.avatar ? (
-                  <div className="size-[80px] shrink-0 rounded-[10px] overflow-hidden relative transition-transform duration-300 ease-out group-hover:scale-105">
+                  <div className={`size-[80px] shrink-0 rounded-[10px] overflow-hidden relative transition-transform ${isMobile ? 'duration-200' : 'duration-300'} ease-out ${isMobile ? '' : 'group-hover:scale-105'}`}>
                     <Image
                       src={agent.avatar}
                       alt={agent.name}
                       width={80}
                       height={80}
-                      className="rounded-[10px] object-cover transition-opacity duration-300"
+                      className={`rounded-[10px] object-cover transition-opacity ${isMobile ? 'duration-200' : 'duration-300'}`}
                       priority={index < 3}
                       loading={index < 3 ? "eager" : "lazy"}
                       quality={85}
                     />
                   </div>
                 ) : (
-                  <div className="size-[80px] shrink-0 rounded-[10px] bg-primary/10 text-primary flex items-center justify-center transition-all duration-300">
+                  <div className={`size-[80px] shrink-0 rounded-[10px] bg-primary/10 text-primary flex items-center justify-center transition-all ${isMobile ? 'duration-200' : 'duration-300'}`}>
                     {getInitials(agent.name)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="mb-1">
-                    <span className="font-semibold text-[22px] truncate transition-colors duration-300">{agent.name}</span>
+                    <span className={`font-semibold text-[22px] truncate transition-colors ${isMobile ? 'duration-200' : 'duration-300'}`}>{agent.name}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate transition-colors duration-300">{agent.function}</p>
+                  <p className={`text-xs text-muted-foreground truncate transition-colors ${isMobile ? 'duration-200' : 'duration-300'}`}>{agent.function}</p>
                 </div>
               </div>
             </div>
             <div className="flex flex-col flex-1 min-h-0">
               {agent.message && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
+                <div className={`animate-in fade-in slide-in-from-top-2 ${isMobile ? 'duration-200' : 'duration-300'} ease-out`}>
                   <div className="flex items-start gap-2 pr-0 pl-2 pb-2 pt-2">
                     {agent.avatar ? (
                       <div className="size-6 shrink-0 rounded-full overflow-hidden relative mt-0.5">
@@ -205,8 +208,8 @@ export default function AgentsPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="rounded-lg rounded-tl-sm px-3 py-2 inline-block max-w-full transition-all duration-300 ease-out group-hover:shadow-md" style={{ backgroundColor: '#252525' }}>
-                        <p className="text-xs text-foreground leading-relaxed break-words transition-colors duration-300">{agent.message}</p>
+                      <div className={`rounded-lg rounded-tl-sm px-3 py-2 inline-block max-w-full transition-all ${isMobile ? 'duration-200' : 'duration-300'} ease-out ${isMobile ? '' : 'group-hover:shadow-md'}`} style={{ backgroundColor: '#252525' }}>
+                        <p className={`text-xs text-foreground leading-relaxed break-words transition-colors ${isMobile ? 'duration-200' : 'duration-300'}`}>{agent.message}</p>
                       </div>
                     </div>
                   </div>
@@ -217,9 +220,9 @@ export default function AgentsPage() {
                   variant="outline"
                   size="sm"
                   onClick={(e) => handleToggleStatus(agent.id, e)}
-                  className="flex-1 gap-1.5 opacity-60 glassy-outline border-0 rounded-[10px] transition-all duration-200 ease-out hover:opacity-100 hover:scale-[1.02] active:scale-[0.98] min-w-0"
+                  className={`flex-1 gap-1.5 opacity-60 glassy-outline border-0 rounded-[10px] transition-all ${isMobile ? 'duration-150' : 'duration-200'} ease-out ${isMobile ? 'active:opacity-100 active:scale-[0.96]' : 'hover:opacity-100 hover:scale-[1.02]'} active:scale-[0.98] min-w-0`}
                 >
-                  <span className="transition-all duration-200 ease-out inline-block shrink-0">
+                  <span className={`transition-all ${isMobile ? 'duration-150' : 'duration-200'} ease-out inline-block shrink-0`}>
                     {agent.status === "active" ? (
                       <Pause className="size-3.5" />
                     ) : (
@@ -232,17 +235,17 @@ export default function AgentsPage() {
                   variant="outline"
                   size="sm"
                   onClick={(e) => handleChat(agent.id, e)}
-                  className="flex-1 gap-1.5 opacity-60 glassy-outline border-0 rounded-[10px] transition-all duration-200 ease-out hover:opacity-100 hover:scale-[1.02] active:scale-[0.98] min-w-0"
+                  className={`flex-1 gap-1.5 opacity-60 glassy-outline border-0 rounded-[10px] transition-all ${isMobile ? 'duration-150' : 'duration-200'} ease-out ${isMobile ? 'active:opacity-100 active:scale-[0.96]' : 'hover:opacity-100 hover:scale-[1.02]'} active:scale-[0.98] min-w-0`}
                 >
-                  <MessageSquare className="size-3.5 transition-transform duration-200 ease-out group-hover:scale-110 shrink-0" />
+                  <MessageSquare className={`size-3.5 transition-transform ${isMobile ? 'duration-150' : 'duration-200'} ease-out ${isMobile ? '' : 'group-hover:scale-110'} shrink-0`} />
                   <span className="truncate">Chat</span>
                 </Button>
                 <Button
                   size="sm"
                   onClick={(e) => handleOpenAgent(agent.id, e)}
-                  className="flex-[2] gap-1.5 glassy-outline border-0 rounded-[10px] transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] min-w-0"
+                  className={`flex-[2] gap-1.5 glassy-outline border-0 rounded-[10px] transition-all ${isMobile ? 'duration-150' : 'duration-200'} ease-out ${isMobile ? 'active:scale-[0.96]' : 'hover:scale-[1.02]'} active:scale-[0.98] min-w-0`}
                 >
-                  <ExternalLink className="size-3.5 transition-transform duration-200 ease-out group-hover:scale-110 shrink-0" />
+                  <ExternalLink className={`size-3.5 transition-transform ${isMobile ? 'duration-150' : 'duration-200'} ease-out ${isMobile ? '' : 'group-hover:scale-110'} shrink-0`} />
                   <span className="truncate">Open Agent</span>
                 </Button>
               </div>
