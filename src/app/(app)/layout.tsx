@@ -379,9 +379,9 @@ export default function AppLayout({
           )}
         </header>
         {isAgentsPage ? (
-          <div className="flex flex-1 overflow-hidden relative">
+          <div className="flex flex-1 overflow-hidden relative min-w-0">
             <div
-              className={`overflow-auto px-4 pb-4 transition-all duration-300 ease-in-out ${
+              className={`overflow-auto px-4 pb-4 transition-all duration-300 ease-in-out min-w-0 ${
                 rightSidebarOpen && !isMobile 
                   ? "w-[calc(100%-20rem)]" 
                   : "w-full"
@@ -391,7 +391,7 @@ export default function AppLayout({
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col p-4 overflow-hidden">{children}</div>
+          <div className="flex flex-1 flex-col p-4 overflow-hidden min-w-0">{children}</div>
         )}
       </SidebarInset>
       {/* Right Sidebar - Separate from content, similar to left sidebar */}
