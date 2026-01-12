@@ -23,11 +23,18 @@ export default function SignInPage() {
   };
 
   return (
-    <div 
-      className="flex min-h-screen flex-col items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: 'url(/servoise-bg.jpg)' }}
-    >
-      <div className="flex justify-center mb-8 -mt-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Optimized background image */}
+      <Image
+        src="/servoise-bg.jpg"
+        alt=""
+        fill
+        priority
+        quality={85}
+        className="object-cover -z-10"
+        sizes="100vw"
+      />
+      <div className="flex justify-center mb-8 -mt-4 relative z-10">
         <Image
           src="/servoise-logo.svg"
           alt="Servoise"
@@ -36,7 +43,7 @@ export default function SignInPage() {
           priority
         />
       </div>
-      <Card className="w-full max-w-md shadow-none border-none outline-none">
+      <Card className="w-full max-w-md shadow-none border-none outline-none relative z-10">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center" style={{ letterSpacing: '-1px' }}>Sign in to Servoise</CardTitle>
           <CardDescription className="text-center">
