@@ -35,6 +35,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sheet,
@@ -402,13 +403,24 @@ export default function AppLayout({
           }`}
         >
           <div className="p-4 border-sidebar-border">
-            <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
+            <p className="text-sm text-muted-foreground mb-2">Overview</p>
+            <h2 className="text-lg font-medium mb-4" style={{ letterSpacing: '-0.6px' }}>
               Hey {firstName}, ready to{" "}
               <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
                 get things done
               </span>
               ?
             </h2>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-xl font-medium">24%</div>
+                <Link href="/credits" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Top up
+                </Link>
+              </div>
+              <Progress value={24} className="h-2" />
+              <p className="text-xs text-muted-foreground">1,200 / 5,000 credits</p>
+            </div>
           </div>
           <div className="flex-1 overflow-auto p-4">
             {/* Right sidebar content */}
@@ -427,13 +439,24 @@ export default function AppLayout({
             </SheetHeader>
             <div className="flex h-full w-full flex-col">
               <div className="p-4 border-sidebar-border">
-                <h2 className="text-lg font-medium" style={{ letterSpacing: '-0.6px' }}>
+                <p className="text-sm text-muted-foreground mb-2">Overview</p>
+                <h2 className="text-lg font-medium mb-4" style={{ letterSpacing: '-0.6px' }}>
                   Hey {firstName}, ready to{" "}
                   <span className="bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
                     get things done
                   </span>
                   ?
                 </h2>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xl font-medium">24%</div>
+                    <Link href="/credits" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      Top up
+                    </Link>
+                  </div>
+                  <Progress value={24} className="h-2" />
+                  <p className="text-xs text-muted-foreground">1,200 / 5,000 credits</p>
+                </div>
               </div>
               <div className="flex-1 overflow-auto p-4">
                 {/* Right sidebar content */}
