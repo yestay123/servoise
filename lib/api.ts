@@ -21,9 +21,9 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const token = this.getToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (token) {
@@ -93,6 +93,8 @@ class ApiClient {
         full_name: string | null;
         avatar_url: string | null;
         role: string;
+        is_active: boolean;
+        is_verified: boolean;
       };
     }>("/api/v1/auth/register", {
       method: "POST",
@@ -110,6 +112,8 @@ class ApiClient {
         full_name: string | null;
         avatar_url: string | null;
         role: string;
+        is_active: boolean;
+        is_verified: boolean;
       };
     }>("/api/v1/auth/signin", {
       method: "POST",
