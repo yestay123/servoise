@@ -76,12 +76,54 @@ class ApiClient {
     );
   }
 
+  async register(data: {
+    email: string;
+    first_name: string;
+    last_name: string;
+    password: string;
+    password_confirm: string;
+    role: "agentuser" | "agentcreator" | "admin";
+  }) {
+    return this.request<{
+      access_token: string;
+      token_type: string;
+      user: {
+        id: number;
+        email: string;
+        full_name: string | null;
+        avatar_url: string | null;
+        role: string;
+      };
+    }>("/api/v1/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async signIn(data: { email: string; password: string }) {
+    return this.request<{
+      access_token: string;
+      token_type: string;
+      user: {
+        id: number;
+        email: string;
+        full_name: string | null;
+        avatar_url: string | null;
+        role: string;
+      };
+    }>("/api/v1/auth/signin", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   async getCurrentUser() {
     return this.request<{
       id: number;
       email: string;
       full_name: string | null;
       avatar_url: string | null;
+      role: string;
       is_active: boolean;
       is_verified: boolean;
     }>("/api/v1/auth/me");
