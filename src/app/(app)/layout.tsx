@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import {
   LayoutDashboard,
   Bot,
@@ -70,9 +71,10 @@ const systemItems = [{ name: "Settings", href: "/settings", icon: Settings }];
 function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
-    router.push("/sign-in");
+    logout();
   };
 
   return (
@@ -169,13 +171,26 @@ function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="size-8 rounded-lg">
-                    <AvatarImage src="" alt="Yestay Anuarbekov" />
-                    <AvatarFallback className="rounded-lg">YA</AvatarFallback>
+                    <AvatarImage src={user?.avatar_url || ""} alt={user?.full_name || user?.email || "User"} />
+                    <AvatarFallback className="rounded-lg">
+                      {user?.full_name
+                        ? user.full_name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2)
+                        : user?.email
+                        ? user.email[0].toUpperCase()
+                        : "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Yestay Anuarbekov</span>
+                    <span className="truncate font-semibold">
+                      {user?.full_name || "User"}
+                    </span>
                     <span className="truncate text-xs text-muted-foreground">
-                      yestay@armeta.ai
+                      {user?.email || ""}
                     </span>
                   </div>
                   <ChevronDown className="ml-auto size-4" />
@@ -228,8 +243,16 @@ export default function AppLayout({
   const [rightSidebarOpen, setRightSidebarOpen] = useState(!isMobile);
   const [agentSwitcherOpen, setAgentSwitcherOpen] = useState(false);
 
+  const { user, loading, isAuthenticated } = useAuth();
+
+  // Client-side route protection - only redirect if not loading and not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace("/sign-in");
+    }
+  }, [loading, isAuthenticated, router]);
   // Extract first name from full name
-  const fullName = "Yestay Anuarbekov";
+  const fullName = user?.full_name || "there";
   const firstName = fullName.split(" ")[0] || "there";
 
   // Determine scope from current route
@@ -337,6 +360,23 @@ export default function AppLayout({
   const toggleRightSidebar = () => {
     setRightSidebarOpen((prev) => !prev);
   };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render app if not authenticated (redirect will happen)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <SidebarProvider defaultOpen={true} className="h-svh">
