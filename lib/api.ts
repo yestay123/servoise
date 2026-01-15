@@ -2,6 +2,8 @@
  * API Client for backend communication
  */
 
+// Production: https://api.servoise.com
+// Development: http://localhost:8000
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface ApiResponse<T> {
@@ -34,7 +36,13 @@ class ApiClient {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         headers,
+        signal: options.signal, // Support abort signals
       });
+
+      // Check if request was aborted
+      if (options.signal?.aborted) {
+        return { error: "Request aborted" };
+      }
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({
@@ -46,6 +54,11 @@ class ApiClient {
       const data = await response.json();
       return { data };
     } catch (error) {
+      // Don't treat abort errors as real errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        return { error: "Request aborted" };
+      }
+      
       return {
         error: error instanceof Error ? error.message : "Network error",
       };
@@ -121,7 +134,7 @@ class ApiClient {
     });
   }
 
-  async getCurrentUser() {
+  async getCurrentUser(signal?: AbortSignal) {
     return this.request<{
       id: number;
       email: string;
@@ -130,7 +143,9 @@ class ApiClient {
       role: string;
       is_active: boolean;
       is_verified: boolean;
-    }>("/api/v1/auth/me");
+    }>("/api/v1/auth/me", {
+      signal,
+    });
   }
 
   // Health check
